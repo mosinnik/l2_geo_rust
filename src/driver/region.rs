@@ -1,12 +1,12 @@
-use std::any::Any;
 use crate::driver::complex_block::ComplexBlock;
-use crate::driver::i_block::IBlock;
 use crate::driver::constants::*;
 use crate::driver::flat_block::FlatBlock;
+use crate::driver::i_block::IBlock;
 use crate::driver::multilayer_block::MultilayerBlock;
+use crate::i_block::BlockImpl;
 
 pub trait IRegion {
-    fn get_block(&self, geo_x: i32, geo_y: i32) -> &dyn IBlock;
+    fn get_block(&self, geo_x: i32, geo_y: i32) -> &BlockImpl;
 
     fn get_nearest_z(&self, geo_x: i32, geo_y: i32, world_z: i32) -> i32;
 
@@ -19,7 +19,7 @@ pub enum RegionImpl {
 }
 
 impl IRegion for RegionImpl {
-    fn get_block(&self, geo_x: i32, geo_y: i32) -> &dyn IBlock {
+    fn get_block(&self, geo_x: i32, geo_y: i32) -> &BlockImpl {
         match self {
             RegionImpl::Region(r) => r.get_block(geo_x, geo_y),
             RegionImpl::NullRegion(r) => r.get_block(geo_x, geo_y),
@@ -60,7 +60,7 @@ impl NullRegion {
 }
 
 impl IRegion for NullRegion {
-    fn get_block(&self, _geo_x: i32, _geo_y: i32) -> &dyn IBlock {
+    fn get_block(&self, _geo_x: i32, _geo_y: i32) -> &BlockImpl {
         // Возвращаем заглушку блока
         unimplemented!()
     }
@@ -69,12 +69,12 @@ impl IRegion for NullRegion {
 }
 
 pub struct Region {
-    pub blocks: Vec<Box<dyn IBlock>>,
+    pub blocks: Vec<BlockImpl>,
 }
 
 impl Region {
     pub fn new(data: &Vec<u8>) -> Self {
-        let mut blocks: Vec<Box<dyn IBlock>> = Vec::with_capacity(REGION_BLOCKS as usize);
+        let mut blocks: Vec<BlockImpl> = Vec::with_capacity(REGION_BLOCKS as usize);
         let mut base_offset: usize = 0;
 
         for i in 0..REGION_BLOCKS {
@@ -84,19 +84,19 @@ impl Region {
                 TYPE_FLAT => {
                     let (block, offset) = FlatBlock::from_bytes(data, base_offset);
                     base_offset = offset;
-                    blocks.push(Box::new(block));
+                    blocks.push(BlockImpl::FlatBlock(Box::new(block)));
                     // println!("{} TYPE_FLAT: {}", i, base_offset);
                 }
                 TYPE_COMPLEX => {
                     let (block, offset) = ComplexBlock::from_bytes(data, base_offset);
                     base_offset = offset;
-                    blocks.push(Box::new(block));
+                    blocks.push(BlockImpl::ComplexBlock(Box::new(block)));
                     // println!("{} TYPE_COMPLEX: {}", i, base_offset);
                 }
                 TYPE_MULTILAYER => {
                     let (block, offset) = MultilayerBlock::from_bytes(data, base_offset).unwrap();
                     base_offset = offset;
-                    blocks.push(Box::new(block));
+                    blocks.push(BlockImpl::MultilayerBlock(Box::new(block)));
                     // println!("{} TYPE_MULTILAYER: {}", i, base_offset);
                 }
                 _ => {
@@ -110,8 +110,8 @@ impl Region {
         Region { blocks }
     }
 
-    pub fn get_block_by_offset(&self, block_offset: usize) -> &dyn IBlock {
-        &*self.blocks[block_offset]
+    pub fn get_block_by_offset(&self, block_offset: usize) -> &BlockImpl {
+        &self.blocks[block_offset]
     }
 
     fn get_block_offset(geo_x: i32, geo_y: i32) -> usize {
@@ -120,9 +120,9 @@ impl Region {
 }
 
 impl IRegion for Region {
-    fn get_block(&self, geo_x: i32, geo_y: i32) -> &dyn IBlock {
+    fn get_block(&self, geo_x: i32, geo_y: i32) -> &BlockImpl {
         let block_offset = Self::get_block_offset(geo_x, geo_y);
-        &*self.blocks[block_offset]
+        &self.blocks[block_offset]
     }
 
     fn get_nearest_z(&self, geo_x: i32, geo_y: i32, world_z: i32) -> i32 {
