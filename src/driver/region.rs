@@ -1,5 +1,5 @@
 use crate::driver::complex_block::ComplexBlock;
-use crate::driver::IBlock::IBlock;
+use crate::driver::i_block::IBlock;
 use crate::driver::constants::*;
 use crate::driver::flat_block::FlatBlock;
 use crate::driver::multilayer_block::MultilayerBlock;
@@ -7,13 +7,7 @@ use crate::driver::multilayer_block::MultilayerBlock;
 pub trait IRegion {
     fn get_block(&self, geo_x: i32, geo_y: i32) -> &dyn IBlock;
 
-    fn check_nearest_nswe(&self, geo_x: i32, geo_y: i32, world_z: i32, nswe: u8) -> bool;
-
     fn get_nearest_z(&self, geo_x: i32, geo_y: i32, world_z: i32) -> i32;
-
-    fn get_next_lower_z(&self, geo_x: i32, geo_y: i32, world_z: i32) -> i32;
-
-    fn get_next_higher_z(&self, geo_x: i32, geo_y: i32, world_z: i32) -> i32;
 
     fn has_geo(&self) -> bool;
 }
@@ -32,10 +26,7 @@ impl IRegion for NullRegion {
         // Возвращаем заглушку блока
         unimplemented!()
     }
-    fn check_nearest_nswe(&self, _geo_x: i32, _geo_y: i32, _world_z: i32, _nswe: u8) -> bool { false }
     fn get_nearest_z(&self, _geo_x: i32, _geo_y: i32, _world_z: i32) -> i32 { 0 }
-    fn get_next_lower_z(&self, _geo_x: i32, _geo_y: i32, _world_z: i32) -> i32 { 0 }
-    fn get_next_higher_z(&self, _geo_x: i32, _geo_y: i32, _world_z: i32) -> i32 { 0 }
     fn has_geo(&self) -> bool { false }
 }
 
@@ -81,14 +72,10 @@ impl Region {
         Region { blocks }
     }
 
-    /// Получение блока по смещению
-    /// Аналог: public IBlock getBlock(int blockOffset)
     pub fn get_block_by_offset(&self, block_offset: usize) -> &dyn IBlock {
         &*self.blocks[block_offset]
     }
 
-    /// Вычисление смещения блока по координатам
-    /// Java: int blockOffset = (((geoX >> 3) & 0xFF) << 8) + ((geoY >> 3) & 0xFF);
     fn get_block_offset(geo_x: i32, geo_y: i32) -> usize {
         (((geo_x >> 3) & 0xFF) << 8) as usize + ((geo_y >> 3) & 0xFF) as usize
     }
@@ -100,21 +87,9 @@ impl IRegion for Region {
         &*self.blocks[block_offset]
     }
 
-    fn check_nearest_nswe(&self, geo_x: i32, geo_y: i32, world_z: i32, nswe: u8) -> bool {
-        self.get_block(geo_x, geo_y).check_nearest_nswe(geo_x, geo_y, world_z, nswe)
-    }
-
     fn get_nearest_z(&self, geo_x: i32, geo_y: i32, world_z: i32) -> i32 {
         let block = self.get_block(geo_x, geo_y);
         block.get_nearest_z(geo_x, geo_y, world_z)
-    }
-
-    fn get_next_lower_z(&self, geo_x: i32, geo_y: i32, world_z: i32) -> i32 {
-        self.get_block(geo_x, geo_y).get_next_lower_z(geo_x, geo_y, world_z)
-    }
-
-    fn get_next_higher_z(&self, geo_x: i32, geo_y: i32, world_z: i32) -> i32 {
-        self.get_block(geo_x, geo_y).get_next_higher_z(geo_x, geo_y, world_z)
     }
 
     fn has_geo(&self) -> bool {

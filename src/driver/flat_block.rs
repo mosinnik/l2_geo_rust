@@ -1,4 +1,4 @@
-use crate::driver::IBlock::IBlock;
+use crate::driver::i_block::IBlock;
 
 pub struct FlatBlock {
     height: i16,
@@ -13,30 +13,10 @@ impl FlatBlock {
     pub fn new(height: i16) -> Self {
         FlatBlock { height }
     }
-
-    /// Геттер высоты
-    /// Аналог: public short getHeight()
-    pub fn get_height(&self) -> i16 {
-        self.height
-    }
 }
 
 impl IBlock for FlatBlock {
-    fn check_nearest_nswe(&self, _geo_x: i32, _geo_y: i32, _world_z: i32, _nswe: u8) -> bool {
-        true
-    }
-
     fn get_nearest_z(&self, _geo_x: i32, _geo_y: i32, _world_z: i32) -> i32 {
         self.height as i32
-    }
-
-    fn get_next_lower_z(&self, _geo_x: i32, _geo_y: i32, world_z: i32) -> i32 {
-        let h = self.height as i32;
-        if h <= world_z { h } else { world_z }
-    }
-
-    fn get_next_higher_z(&self, _geo_x: i32, _geo_y: i32, world_z: i32) -> i32 {
-        let h = self.height as i32;
-        if h >= world_z { h } else { world_z }
     }
 }
