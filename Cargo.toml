@@ -1,0 +1,22 @@
+[package]
+name = "l2_geo_rust"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+name = "l2_geo_rust"
+path = "src/lib.rs"
+
+[dependencies]
+anyhow = "1.0.102"
+
+[dev-dependencies]
+criterion = "0.8.2"
+
+[[bench]]
+name = "geo_benchmark"
+harness = false
+
+[profile.bench]
+opt-level = 3
+lto = true
