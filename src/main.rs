@@ -72,7 +72,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     for (world_x, world_y, geo_x, geo_y, nswe) in records.iter().take(10) {
         // println!("({}, {}, {}, {}, {}, {})", world_x, world_y, geo_x, geo_y, -3000, nswe);
         let z = geo_driver.get_nearest_z(*geo_x, *geo_y, -3000);
-        // println!("z = {}", z);
+        println!("z = {}", z);
     }
 
 

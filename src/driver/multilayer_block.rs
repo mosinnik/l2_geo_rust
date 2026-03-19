@@ -78,6 +78,7 @@ impl MultilayerBlock {
 
 impl IBlock for MultilayerBlock {
     fn get_nearest_z(&self, geo_x: i32, geo_y: i32, world_z: i32) -> i32 {
+        // println!("multi");
         Self::extract_layer_height(self.get_nearest_layer(geo_x, geo_y, world_z))
     }
 }

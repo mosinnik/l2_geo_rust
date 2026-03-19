@@ -3,15 +3,16 @@ use crate::driver::region::{IRegion, NullRegion, Region};
 use crate::utils;
 use crate::utils::{REGION_X, REGION_Y};
 use std::error::Error;
+use crate::region::RegionImpl;
 
 pub struct GeoDriver {
-    pub regions: Vec<Box<dyn IRegion>>,
+    pub regions: Vec<RegionImpl>,
 }
 
 impl GeoDriver {
     pub fn new() -> Self {
         let regions = (0..GEO_REGIONS)
-            .map(|_| Box::new(NullRegion::new()) as Box<dyn IRegion>)
+            .map(|_| RegionImpl::null())
             .collect();
 
         Self {
@@ -22,16 +23,16 @@ impl GeoDriver {
     pub fn load_region(&mut self) -> Result<(), Box<dyn Error>> {
         let region_data = utils::read_region_data()?;
 
-        let region = Region::new(&region_data);
+        let region = RegionImpl::from_data(&region_data);
 
         let region_offset = REGION_X * GEO_REGIONS_Y + REGION_Y;
         println!("Region offset: {}", region_offset);
-        self.regions[region_offset as usize] = Box::new(region);
+        self.regions[region_offset as usize] = region;
 
         Ok(())
     }
 
-    fn get_region(&self, geo_x: i32, geo_y: i32) -> &Box<dyn IRegion> {
+    fn get_region(&self, geo_x: i32, geo_y: i32) -> &RegionImpl {
         // Java: int regionOffset = ((geoX >> 11) << 5) + (geoY >> 11);
         let region_offset = ((geo_x >> 11) << 5) + (geo_y >> 11);
         &self.regions[region_offset as usize]

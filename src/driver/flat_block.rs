@@ -17,6 +17,7 @@ impl FlatBlock {
 
 impl IBlock for FlatBlock {
     fn get_nearest_z(&self, _geo_x: i32, _geo_y: i32, _world_z: i32) -> i32 {
+        // println!("flat");
         self.height as i32
     }
 }

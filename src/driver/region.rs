@@ -1,3 +1,4 @@
+use std::any::Any;
 use crate::driver::complex_block::ComplexBlock;
 use crate::driver::i_block::IBlock;
 use crate::driver::constants::*;
@@ -12,6 +13,43 @@ pub trait IRegion {
     fn has_geo(&self) -> bool;
 }
 
+pub enum RegionImpl {
+    Region(Box<Region>),
+    NullRegion(NullRegion),
+}
+
+impl IRegion for RegionImpl {
+    fn get_block(&self, geo_x: i32, geo_y: i32) -> &dyn IBlock {
+        match self {
+            RegionImpl::Region(r) => r.get_block(geo_x, geo_y),
+            RegionImpl::NullRegion(r) => r.get_block(geo_x, geo_y),
+        }
+    }
+
+    fn get_nearest_z(&self, geo_x: i32, geo_y: i32, world_z: i32) -> i32 {
+        match self {
+            RegionImpl::Region(r) => r.get_nearest_z(geo_x, geo_y, world_z),
+            RegionImpl::NullRegion(r) => r.get_nearest_z(geo_x, geo_y, world_z),
+        }
+    }
+
+    fn has_geo(&self) -> bool {
+        match self {
+            RegionImpl::Region(r) => r.has_geo(),
+            RegionImpl::NullRegion(r) => r.has_geo(),
+        }
+    }
+}
+
+impl RegionImpl {
+    pub fn null() -> Self {
+        RegionImpl::NullRegion(NullRegion::new())
+    }
+
+    pub fn from_data(data: &Vec<u8>) -> Self {
+        RegionImpl::Region(Box::new(Region::new(data)))
+    }
+}
 
 pub struct NullRegion;
 

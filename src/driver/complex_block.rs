@@ -35,6 +35,8 @@ impl ComplexBlock {
 
 impl IBlock for ComplexBlock {
     fn get_nearest_z(&self, geo_x: i32, geo_y: i32, _world_z: i32) -> i32 {
-        self.get_cell_height(geo_x, geo_y)
+        let h = self.get_cell_height(geo_x, geo_y);
+        // println!("complex: {}", h);
+        h
     }
 }
