@@ -25,7 +25,7 @@ impl ComplexBlock {
     fn get_cell_height(&self, geo_x: i32, geo_y: i32) -> i32 {
         let cell_offset = Self::get_cell_offset(geo_x, geo_y);
         let short_val = self.data[cell_offset];
-        ((short_val as i32) >> 1) & 0x7FFFFFFE
+        (short_val as i32 & 0xFFFFFFFEu32 as i32) >> 1
     }
 
     fn get_cell_offset(geo_x: i32, geo_y: i32) -> usize {
